@@ -1,7 +1,5 @@
 package name.lemerdy.eric.resource;
 
-import name.lemerdy.eric.resource.Elevator;
-import name.lemerdy.eric.Floors;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -9,14 +7,14 @@ import javax.ws.rs.core.Response;
 
 import static org.fest.assertions.Assertions.assertThat;
 
-public class ElevatorTest {
+public class ElevatorResourceTest {
 
-    private Elevator elevator;
+    private ElevatorResource elevator;
     private Response response;
 
     @Before
     public void setUp() throws Exception {
-        elevator = new Elevator();
+        elevator = new ElevatorResource();
     }
 
     private void assertThatAction(Response response, Integer statusCode, String action) {

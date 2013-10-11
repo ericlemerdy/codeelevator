@@ -13,65 +13,62 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 
 import name.lemerdy.eric.DoorAction;
-import name.lemerdy.eric.Floors;
+import name.lemerdy.eric.Elevator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Singleton
 @Path("/")
-public class Elevator {
+public class ElevatorResource {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(Elevator.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ElevatorResource.class);
     private DoorAction doorAction;
-    private Floors mustGo;
-    private Integer currentFloor;
+    private Elevator elevator;
 
-    public Elevator() {
+    public ElevatorResource() {
         init();
     }
 
     private void init() {
         doorAction = NOTHING;
-        mustGo = new Floors();
-        currentFloor = 0;
+        elevator = new Elevator();
     }
 
     @GET()
     @Path("/nextCommand")
     public Response nextCommand() {
         LOGGER.info("> nextCommand ");
-        String command = "";
+        String nextCommand = "";
         if (doorAction.equals(CLOSE)) {
-            command = "CLOSE";
+            nextCommand = "CLOSE";
             doorAction = NOTHING;
-        } else if (mustGo.get(currentFloor) > 0) {
-            command = "OPEN";
+        } else if (elevator.getNumberOfPersonThatWantToOpenDoorsHere() > 0) {
+            nextCommand = "OPEN";
             doorAction = CLOSE;
-            mustGo.emptyFloor(currentFloor);
-        } else if (mustGo.haveDirection()) {
-            command = mustGo.chooseDirection(currentFloor);
-            currentFloor = currentFloor + (command.equals("UP") ? 1 : -1);
+            elevator.openedDoorsHere();
+        } else if (elevator.isWaitedElsewhere()) {
+            nextCommand = elevator.moveThroughFloorWhereAMaximumOfPersonWantToOpenDoors();
         } else {
-            command = "NOTHING";
+            nextCommand = "NOTHING";
         }
-        LOGGER.info("< " + command);
-        return ok(command).build();
+        LOGGER.info("< " + nextCommand);
+        return ok(nextCommand).build();
     }
 
     @GET()
     @Path("/call")
     public Response call(@QueryParam("atFloor") Integer atFloor, @QueryParam("to") String to) {
         LOGGER.info("> call atFloor=" + atFloor + " to=" + to);
-        mustGo.addPersonAtFloor(atFloor);
+        elevator.oneMorePersonWantToOpenDoorsAt(atFloor);
         LOGGER.info("< ");
         return ok().build();
     }
 
     @GET()
     @Path("/go")
-    public Response go(@QueryParam("floorToGo") Integer floorToGo) {
-        LOGGER.info("> go floorToGo=" + floorToGo);
-        mustGo.addPersonAtFloor(floorToGo);
+    public Response go(@QueryParam("floorToGo") Integer floor) {
+        LOGGER.info("> go floorToGo=" + floor);
+        elevator.oneMorePersonWantToOpenDoorsAt(floor);
         LOGGER.info("< ");
         return ok().build();
     }
