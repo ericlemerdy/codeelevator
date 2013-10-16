@@ -20,9 +20,7 @@ import org.slf4j.LoggerFactory;
 @Singleton
 @Path("/")
 public class ElevatorResource {
-
     private static final Logger LOGGER = LoggerFactory.getLogger(ElevatorResource.class);
-    private DoorAction doorAction;
     private Elevator elevator;
 
     public ElevatorResource() {
@@ -30,7 +28,6 @@ public class ElevatorResource {
     }
 
     private void init() {
-        doorAction = NOTHING;
         elevator = new Elevator();
     }
 
@@ -38,19 +35,7 @@ public class ElevatorResource {
     @Path("/nextCommand")
     public Response nextCommand() {
         LOGGER.info("> nextCommand ");
-        String nextCommand = "";
-        if (doorAction.equals(CLOSE)) {
-            nextCommand = "CLOSE";
-            doorAction = NOTHING;
-        } else if (elevator.getNumberOfPersonThatWantToOpenDoorsHere() > 0) {
-            nextCommand = "OPEN";
-            doorAction = CLOSE;
-            elevator.openedDoorsHere();
-        } else if (elevator.isWaitedElsewhere()) {
-            nextCommand = elevator.moveThroughFloorWhereAMaximumOfPersonWantToOpenDoors();
-        } else {
-            nextCommand = "NOTHING";
-        }
+        String nextCommand = elevator.performNextCommand();
         LOGGER.info("< " + nextCommand);
         return ok(nextCommand).build();
     }
